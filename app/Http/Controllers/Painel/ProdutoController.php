@@ -59,9 +59,14 @@ class ProdutoController extends Controller
         // dd($request->input('name'));
 
         // pega todos os dados que vem do formulário
-        $dataForm = $request->all();
+        // $dataForm = $request->all();
 
-        $dataForm['active'] = (!isset($dataForm['active'])) ? 0 : 1;
+        // pega todos os dados que foram validados pelo ProductFormRequest
+        $dataForm = $request->validated();
+
+        // null coaellescing operator - se o active não existir, ele vai ser false
+        // $dataForm['active'] = (!isset($dataForm['active'])) ? 0 : 1;
+        $dataForm['active'] = $dataForm['active'] ?? 0;
 
         // valida os dados
         // $this->validate($request, $this->product->rules);
@@ -106,9 +111,19 @@ class ProdutoController extends Controller
      */
     public function show($id)
     {
-        $product = $this->product->find($id);
+        /*
+            caso não encontre o produto, ele retornará null.
+            Isso causará erro quando você declara a variavél $title e o product não existir
 
-        $title = "Produuto: {$product->name}";
+            $product = $this->product->find($id);
+            $title = "Produuto: {$product->name}";
+
+            Nesse caso, você pode utilizar o findOrFail, que dispara uma exceção (NotFoundHttpException) caso não encontre o produto.
+            Você pode tratar essa exceção no arquivo app\Exceptions\Handler.php para retornar uma página 404 personalizada.
+        */
+
+        $product = $this->product->findOrFail($id); // se não encontrar o produto, a função retorna uma exceção com o código 404
+        $title = "Produto: {$product->name}";
 
         return view('painel.products.show', compact('product', 'title'));
 
@@ -123,7 +138,7 @@ class ProdutoController extends Controller
     public function edit($id)
     {
         // Recupera o produto pelo seu id
-        $product = $this->product->find($id);
+        $product = $this->product->findOrFail($id);
 
         $title = "Editar Produto: {$product->name}";
 
@@ -142,13 +157,13 @@ class ProdutoController extends Controller
     public function update(ProductFormRequest $request, $id)
     {
         // recupera todos os dados do formulário
-        $dataForm = $request->all();
+        $dataForm = $request->validated();
 
         // recupera o item para editar
-        $product = $this->product->find($id);
+        $product = $this->product->findOrFail($id);
 
         // verifica se o produto está ativado
-        $dataForm['active'] = (!isset($dataForm['active'])) ? 0 :  1;
+        $dataForm['active'] = $dataForm['active'] ?? 0;
 
         // altera os itens
         $update = $product->update($dataForm);
@@ -168,14 +183,14 @@ class ProdutoController extends Controller
      */
     public function destroy($id)
     {
-        $product = $this->product->find($id);
+        $product = $this->product->findOrFail($id);
 
         $delete = $product->delete();
 
         if($delete)
             return redirect()->route('listaProdutos');
-        else
-            return redirect()->route('listaProduto', $id)->with(['errors' => 'Falha ao deleter']);
+
+        return redirect()->route('listaProduto', $id)->with(['errors' => 'Falha ao deleter']);
     }
 
     public function tests()

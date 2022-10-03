@@ -27,7 +27,8 @@ class ProductFormRequest extends FormRequest
             'name' => 'required|min:3|max:100|',
             'number' => 'required|numeric',
             'category' => 'required',
-            'description' => 'required|min:3|max:1000' // O usuário não é obrigado a colocar nada, mas se ele preencher, a quantidade minima é 3 e a máxima é 1000.
+            'description' => 'required|min:3|max:1000', // O usuário não é obrigado a colocar nada, mas se ele preencher, a quantidade minima é 3 e a máxima é 1000.
+            'active' => 'nullable|boolean'
         ];
     }
 
